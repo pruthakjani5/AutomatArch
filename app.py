@@ -4,6 +4,8 @@ from collections import defaultdict
 import graphviz
 import re
 import pandas as pd
+import warnings
+warnings.filterwarnings('ignore')
 
 class State:
     """Represents a state in the automaton."""
