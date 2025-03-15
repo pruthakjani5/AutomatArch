@@ -681,13 +681,12 @@ def main():
             st.error(f"Error: {e}")
         except Exception as e:
             st.error(f"Unexpected error: {e}")
-	st.markdown("""
-	---
-	**About Me:** This application was created by Pruthak Jani.
-	
-	**Connect with Me:** If you have any questions, feedback, bug reports, or if you find any incorrect answers, please feel free to reach out via email: pruthak.jani@gmail.com
-	""")
-
+        st.markdown("""
+        ---
+        **About Me:** This application was created by Pruthak Jani.
+        
+        **Connect with Me:** If you have any questions, feedback, bug reports, or if you find any incorrect answers, please feel free to reach out via email: pruthak.jani@gmail.com
+        """)
 
 if __name__ == "__main__":
     main()
