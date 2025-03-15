@@ -626,7 +626,7 @@ def main():
                 st.markdown("### NFA-ε Visualization:")
                 nfa_viz = visualize_automaton(nfa_epsilon, f"NFA for {regex}", is_nfa=True)
                 nfa_viz.render("nfa", format="png", cleanup=True)
-                st.image("nfa.png", use_column_width=True)
+                st.image("nfa.png", use_container_width=True)
 
                 # Convert NFA-ε to DFA
                 st.subheader("Step 2: Convert NFA-ε to DFA")
@@ -639,7 +639,7 @@ def main():
                 st.markdown("### Unminimized DFA Visualization:")
                 dfa_viz = visualize_automaton(dfa, f"DFA for {regex}", is_nfa=False)
                 dfa_viz.render("dfa", format="png", cleanup=True)
-                st.image("dfa.png", use_column_width=True)
+                st.image("dfa.png", use_container_width=True)
 
                 # Minimize DFA
                 st.subheader("Step 3: Minimize DFA")
@@ -652,7 +652,7 @@ def main():
                 st.markdown("### Minimized DFA Visualization:")
                 min_dfa_viz = visualize_automaton(min_dfa, f"Minimized DFA for {regex}", is_nfa=False)
                 min_dfa_viz.render("min_dfa", format="png", cleanup=True)
-                st.image("min_dfa.png", use_column_width=True)
+                st.image("min_dfa.png", use_container_width=True)
 
 
                 # Explanations in Sidebar
