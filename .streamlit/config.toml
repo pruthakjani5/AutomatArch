@@ -1,0 +1,7 @@
+[theme]
+base="light"
+primaryColor="#3F51B5"       # Indigo - professional and distinct
+backgroundColor="#FAFAFA"    # Off-white background - soft on the eyes
+secondaryBackgroundColor="#E9EBFF"  # Light indigo tint for contrast
+textColor="#263238"          # Dark blue-gray text for sophistication
+font="Serif"                # Professional, modern font with softer edges
