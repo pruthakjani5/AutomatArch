@@ -661,6 +661,65 @@ def explain_nfa_to_dfa_conversion(nfa, dfa):
     """
     return explanation
 
+def dfa_to_regular_grammar(dfa):
+    """Convert a DFA to a Regular Grammar with minimal productions."""
+    grammar = []
+    grammar.append(f"Start Symbol: S")
+    
+    # Simplify grammar for common patterns
+    if len(dfa["states"]) == 1 and dfa["start_state"] in dfa["final_states"]:
+        # Special case for single-state DFA that's also final
+        productions = []
+        for (state, symbol), next_state in sorted(dfa["transitions"].items()):
+            if state == next_state:  # Self-loop
+                productions.append(f"{symbol}S")
+        
+        if productions:
+            grammar.append(f"Productions:\nS -> {' | '.join(productions)} | ε")
+        else:
+            grammar.append("Productions:\nS -> ε")
+        return grammar
+    
+    # Map states to non-terminals - use more meaningful naming
+    state_to_nt = {state: f"A{i}" for i, state in enumerate(sorted(list(dfa["states"])))}
+    start_nt = state_to_nt[dfa["start_state"]]
+    
+    # List non-terminals and terminals
+    grammar.append(f"Non-terminals: S, {', '.join(state_to_nt.values())}")
+    grammar.append(f"Terminals: {', '.join(sorted(list(dfa['alphabet'])))}")
+    grammar.append("Productions:")
+    
+    # Start production - map directly to transitions of start state
+    start_state = dfa["start_state"]
+    start_productions = []
+    
+    for (state, symbol), next_state in sorted(dfa["transitions"].items()):
+        if state == start_state:
+            start_productions.append(f"{symbol}{state_to_nt[next_state]}")
+    
+    if start_state in dfa["final_states"]:
+        start_productions.append("ε")
+    
+    grammar.append(f"S -> {' | '.join(start_productions)}")
+    
+    # Add productions for each state
+    for state in sorted(list(dfa["states"])):
+        if state == start_state:
+            continue  # Already handled in start production
+            
+        state_productions = []
+        for (s, symbol), next_state in sorted(dfa["transitions"].items()):
+            if s == state:
+                state_productions.append(f"{symbol}{state_to_nt[next_state]}")
+                
+        if state in dfa["final_states"]:
+            state_productions.append("ε")
+            
+        if state_productions:
+            grammar.append(f"{state_to_nt[state]} -> {' | '.join(state_productions)}")
+    
+    return grammar
+
 def main():
     st.set_page_config(
         page_title="Automata Architect | RE to DFA Converter", 
@@ -684,6 +743,39 @@ def main():
     custom_alphabet = st.text_input("Custom Alphabet (optional, comma-separated):", 
                                     placeholder="e.g., a,b,c",
                                     help="Leave blank to automatically detect from regex. All symbols used in regex must be in this alphabet.")
+    # Add test examples if no regex is entered
+    if not regex:
+        if 'regex' not in st.session_state:
+            st.session_state.regex = ''
+            
+        st.markdown("### 📝 Try these standard examples:")
+        examples = [
+            ("(a+b)*abb", "Strings ending with 'abb'"),
+            ("a*b*", "Any number of a's followed by any number of b's"),
+            ("(a+b)*b(a+b)(a+b)", "Strings with 'b' as third-to-last character"),
+            ("^+aa*bb*", "Empty string or strings starting with 'a' followed by b's"), 
+            ("(a+b)*a(a+b)(a+b)", "Strings with 'a' as third-to-last character"),
+            ("(0+1)*101(0+1)*", "Binary strings containing '101'"),
+            ("(0+1)*111(0+1)*", "Binary strings containing '111'"),
+            ("(a+b)*bba*", "Strings containing 'bb' followed by any number of a's"),
+            ("(ab+ba)*", "Strings with alternating a's and b's"),
+            ("(a+^)(b+^)(c+^)", "Strings with optional a, b, and c in order"),
+            ("(aa)*", "Strings of even length containing only a's"),
+            ("(a+b)*aba(a+b)*", "Strings containing 'aba' as a substring"),
+        ]
+
+        # Create dropdown for examples
+        example_dict = {desc: pattern for pattern, desc in examples}
+        selected_example = st.selectbox(
+            "Select an example pattern:",
+            options=list(example_dict.keys()),
+            format_func=lambda x: f"Example: {x}"
+        )
+
+        if selected_example and st.button("Use Selected Example"):
+            st.session_state.regex = example_dict[selected_example]
+            st.rerun()
+        regex = st.session_state.regex
     if not regex:
         with st.container():
                     st.markdown("""
@@ -1243,13 +1335,40 @@ def main():
 
             else:
                 st.error("Error: Could not create NFA from the regular expression. Please check your syntax.")
-
         except ValueError as e:
             st.error(f"Error: {e}")
         except Exception as e:
             st.error(f"Unexpected error: {str(e)}")
             st.exception(e)  # Show detailed exception in development
-        
+            
+        # Only proceed with grammar conversion if we have a valid DFA
+        if 'min_dfa' in locals():
+            # Add conversion to Regular Grammar
+            st.subheader("Step 4: Convert DFA to Regular Grammar")
+            st.markdown("""
+            As a final step, we can convert the minimized DFA back to a Regular Grammar.
+            This demonstrates the equivalence between DFAs and Right-Linear Grammars,
+            completing the cycle of conversions.
+            """)
+            
+            # Convert minimized DFA to regular grammar
+            grammar = dfa_to_regular_grammar(min_dfa)
+            
+            with st.expander("Show Regular Grammar"):
+                st.markdown("### Regular Grammar (Right-Linear Grammar)")
+                for rule in grammar:
+                    st.code(rule, language="text")
+                
+                st.markdown("""
+                **Grammar Explanation:**
+                - S is the start symbol
+                - Each state in the DFA becomes a non-terminal
+                - Each transition becomes a production rule
+                - Final states can derive the empty string (ε)
+                
+                This regular grammar generates exactly the same language as recognized by the DFA
+                and the original regular expression.
+                """)
         # Enhanced footer with academic references
         st.markdown("""
         ---
