@@ -1296,7 +1296,7 @@ def main():
                     for symbol in alphabet_without_epsilon:
                         nfa_transitions_data[symbol] = []
                     
-                    for state in sorted(list(nfa_epsilon.states)):
+                    for state in sorted(list(nfa_epsilon.states), key=lambda s: s.name):
                         nfa_transitions_data["State"].append(state)
                         for symbol in alphabet_without_epsilon:
                             new_states = set()
@@ -1320,7 +1320,7 @@ def main():
                     """)
                     
                     final_states_data = {"State": [], "Contains Final State?": [], "Is Final in New NFA": []}
-                    for state in sorted(list(nfa_epsilon.states)):
+                    for state in sorted(list(nfa_epsilon.states), key=lambda s: s.name):
                         final_states_data["State"].append(state)
                         
                         contains_final = any(s in nfa_epsilon.final_states for s in epsilon_closures[state])
