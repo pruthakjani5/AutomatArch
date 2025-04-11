@@ -1049,12 +1049,28 @@ def main():
 
         if input_type == "Regular Grammar":
             st.markdown("### 📝 Try these grammar examples:")
+            # grammar_examples = [
+            # ("S,A,B\na,b\nS\nS -> aA | bB\nA -> aA | bB | ε\nB -> aA | bB | b", "Simple right-linear grammar"),
+            # ("S,A\na,b\nS\nS -> aA | a | b\nA -> aA | bA | b", "Right-linear grammar with direct transitions"),
+            # ("S,A0,A1,A2\na,b\nS\nS -> aA1 | bA2\nA0 -> aA1 | bA0 | ε\nA2 -> aA1 | bA0", "Parity automaton grammar (even b's)"),
+            # ("S,A,B,C\na,b\nS\nS -> aA | bB\nA -> aA | bC | ε\nB -> aA | bB | ε\nC -> aC | bB", "Strings ending with 'bb' grammar"),
+            # ("S,A,B,C,D\na,b\nS\nS -> aA | bB\nA -> aS | bC\nB -> aD | bS\nC -> aC | bD\nD -> aB | bC", "Strings with length multiple of 3 grammar"),
+            # ]
             grammar_examples = [
-            ("S,A,B\na,b\nS\nS -> aA | bB\nA -> aA | bB | ε\nB -> aA | bB | b", "Simple right-linear grammar"),
-            ("S,A\na,b\nS\nS -> aA | a | b\nA -> aA | bA | b", "Right-linear grammar with direct transitions"),
-            ("S,A0,A1,A2\na,b\nS\nS -> aA1 | bA2\nA0 -> aA1 | bA0 | ε\nA2 -> aA1 | bA0", "Parity automaton grammar (even b's)"),
-            ("S,A,B,C\na,b\nS\nS -> aA | bB\nA -> aA | bC | ε\nB -> aA | bB | ε\nC -> aC | bB", "Strings ending with 'bb' grammar"),
-            ("S,A,B,C,D\na,b\nS\nS -> aA | bB\nA -> aS | bC\nB -> aD | bS\nC -> aC | bD\nD -> aB | bC", "Strings with length multiple of 3 grammar"),
+                ("S,A\na,b\nS\nS -> aA | bS | ε\nA -> aA | bS", "Strings that begin with 'a' or are empty"),
+                ("S,A,B\na,b\nS\nS -> aA | bB\nA -> aA | a | ε\nB -> bB | b | ε", "Strings of only a's or only b's (including empty string)"),
+                ("S\na,b\nS\nS -> aS | bS | a | b | ε", "All strings over {a, b} including the empty string"),
+                ("S,A\na,b\nS\nS -> aS | bA\nA -> aA | bA | ε", "Strings ending with at least one 'b'"),
+                ("S,A,B\na,b\nS\nS -> aS | bA\nA -> aB | bA\nB -> aS | bA | ε", "Strings containing 'ba' as a substring"),
+                ("S,A,B,C\na,b\nS\nS -> aA | bS | ε\nA -> aB | bS\nB -> aC | bS\nC -> aS | bS | ε", "Strings where 'aaa' appears as a substring"),
+                ("S,A,B,C\n0,1\nS\nS -> 0S | 1A\nA -> 0B | 1S\nB -> 0C | 1S\nC -> 0S | 1S | ε", "Binary strings containing '101' as a substring"),
+                ("S,A,B\na,b\nS\nS -> aA | bB\nA -> aA | bA | ε\nB -> aB | bB | ε", "Strings with either 'a' or 'b' as the first symbol"),
+                ("S,O,E\n0,1\nS\nS -> 0E | 1O | ε\nE -> 0E | 1O\nO -> 0E | 1O | ε", "Binary strings with an even number of 1's"),
+                ("S,A,B\na,b\nS\nS -> aA | bB | ε\nA -> aS | bB\nB -> bS | aA", "Strings with equal number of a's and b's"),
+                ("S,A,B,C,D\na,b,c\nS\nS -> aA | bB | cC\nA -> aA | bB | cC | ε\nB -> aD | bB | cC\nC -> aA | bB | cC | ε\nD -> aA | bD | cC | ε", "Strings where every 'b' is followed by an 'a'"),
+                ("S,A,B\na,b\nS\nS -> aS | aA | bS\nA -> bB\nB -> bB | ε", "Strings containing 'abb' as a substring"),
+                ("S,A,B,C\na,b,c\nS\nS -> aS | bA | cS | ε\nA -> aB | bA | cS\nB -> aC | bA | cS\nC -> aS | bA | cS | ε", "Strings containing the substring 'abc'"),
+                ("S,A\na,b\nS\nS -> aS | bA | ε\nA -> aA | bS", "Strings with an even number of b's")
             ]
             
             # Create dropdown for grammar examples
