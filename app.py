@@ -1336,8 +1336,10 @@ def main():
                 Each DFA state represents all possible states the NFA could be in after reading a particular input.
                 """)
                 
-                dfa = nfa.to_dfa()
-
+                # Assign nfa_epsilon to nfa
+                nfa = nfa_epsilon  # Add this line to define the `nfa` variable
+                
+                dfa = nfa.to_dfa()  # Proceed with the conversion
                 with st.expander("Show NFA to DFA Subset Construction Steps"):
                     st.markdown("### Step 1: Start with the ε-closure of the NFA start state")
                     initial_closure = nfa.epsilon_closure(nfa.start_state)
