@@ -1268,103 +1268,65 @@ def main():
 
                 # Show NFA-ε to NFA Conversion Steps
                 st.subheader("Step 2: NFA-ε to NFA Conversion (Eliminating ε-transitions)")
-                st.markdown("""
-                Before converting to a DFA, we can first eliminate epsilon transitions from the NFA.
-                This intermediate step helps understand the overall conversion process better.
-                """)
-                
-                with st.expander("Show NFA-ε to NFA Conversion Steps"):
-                    # Compute epsilon closures for all states
-                    epsilon_closures = {}
-                    for state in nfa_epsilon.states:
-                        epsilon_closures[state] = nfa_epsilon.epsilon_closure(state)
-                    
-                    # Display epsilon closures in a table
-                    st.markdown("### Step 1: Compute ε-closures for all states")
-                    closure_data = {"State": [], "ε-closure": []}
-                    for state, closure in epsilon_closures.items():
-                        closure_data["State"].append(state)
-                        closure_data["ε-closure"].append(', '.join(sorted([str(s) for s in closure])))
-                    
-                    st.table(pd.DataFrame(closure_data))
                     st.markdown("""
-                    **How to compute ε-closure:**
-                    - Start with the state itself
-                    - Add all states reachable by following ε-transitions
-                    - Continue until no new states can be added
+                    Before converting to a DFA, we can first eliminate epsilon transitions from the NFA.
+                    This intermediate step helps understand the overall conversion process better.
                     """)
                     
-                    # Show how to create the new transitions
-                    st.markdown("### Step 2: Create new transition table for NFA without ε-transitions")
-                    st.markdown("""
-                    For each state S and input symbol a, the new transition δ'(S,a) will be:
-                    The union of δ(R,a) for all states R in the ε-closure of S
-                    
-                    Follow these steps for each state and symbol:
-                    1. Find the ε-closure of the state
-                    2. For each state in the closure, find all states reachable with the symbol
-                    3. For each of those states, include their ε-closures in the result
-                    """)
-                    
-                    # Create a mock transition table for the NFA without ε transitions
-                    alphabet_without_epsilon = nfa_epsilon.alphabet - {''}
-                    nfa_transitions_data = {"State": []}
-                    for symbol in alphabet_without_epsilon:
-                        nfa_transitions_data[symbol] = []
-                    
-                    for state in sorted(list(nfa_epsilon.states), key=lambda s: s.name):
-                        nfa_transitions_data["State"].append(state)
-                        for symbol in alphabet_without_epsilon:
-                            new_states = set()
-                            for s in epsilon_closures[state]:
-                                if (s, symbol) in nfa_epsilon.transitions:
-                                    for target in nfa_epsilon.transitions[(s, symbol)]:
-                                        new_states.update(epsilon_closures[target])
-                            
-                            if new_states:
-                                nfa_transitions_data[symbol].append(', '.join(sorted([str(s) for s in new_states])))
-                            else:
-                                nfa_transitions_data[symbol].append("∅")  # Empty set
-                    
-                    st.table(pd.DataFrame(nfa_transitions_data))
-                    
-                    # Show final states calculation
-                    st.markdown("### Step 3: Determine the final states of the new NFA")
-                    st.markdown("""
-                    A state in the new NFA is a final state if its ε-closure contains any final state 
-                    from the original NFA-ε.
-                    """)
-                    
-                    final_states_data = {"State": [], "Contains Final State?": [], "Is Final in New NFA": []}
-                    for state in sorted(list(nfa_epsilon.states), key=lambda s: s.name):
-                        final_states_data["State"].append(state)
+                    with st.expander("Show NFA-ε to NFA Conversion Steps"):
+                        # Compute epsilon closures for all states
+                        epsilon_closures = {}
+                        for state in nfa_epsilon.states:
+                            epsilon_closures[state] = nfa_epsilon.epsilon_closure(state)
                         
-                        contains_final = any(s in nfa_epsilon.final_states for s in epsilon_closures[state])
-                        final_states_data["Contains Final State?"].append("Yes" if contains_final else "No")
-                        final_states_data["Is Final in New NFA"].append("Yes" if contains_final else "No")
-                    
-                    st.table(pd.DataFrame(final_states_data))
-
-                # Convert NFA-ε to NFA (remove epsilon transitions)
-                # st.subheader("Step 2: Convert NFA-ε to NFA (Removing Epsilon Transitions)")
-                # st.markdown("""
-                # Before converting to a DFA, we remove epsilon transitions from the NFA-ε. This simplifies the subsequent DFA conversion process.
-                # """)
-
-                nfa = nfa_epsilon.remove_epsilon_transitions()
-
-                col1, col2 = st.columns([1, 2])
-                with col1:
-                    st.markdown("### NFA Details (without ε):")
-                    nfa_str = capture_display(nfa.display)
-                    st.code(nfa_str, language="text")
-                
-                with col2:
-                    st.markdown("### NFA Visualization (without ε):")
-                    nfa_viz = visualize_automaton(nfa, f"NFA for {regex} (no ε)", is_nfa=True)
-                    nfa_viz.render("nfa_no_epsilon", format="png", cleanup=True)
-                    st.image("nfa_no_epsilon.png", use_container_width=True)
-                    st.caption("NFA without epsilon transitions.")
+                        # Display epsilon closures in a table
+                        st.markdown("### Step 1: Compute ε-closures for all states")
+                        closure_data = {"State": [], "ε-closure": []}
+                        for state, closure in epsilon_closures.items():
+                            closure_data["State"].append(state)
+                            closure_data["ε-closure"].append(', '.join(sorted([str(s) for s in closure])))
+                        
+                        st.table(pd.DataFrame(closure_data))
+                        st.markdown("""
+                        **How to compute ε-closure:**
+                        - Start with the state itself
+                        - Add all states reachable by following ε-transitions
+                        - Continue until no new states can be added
+                        """)
+                        
+                        # Show how to create the new transitions
+                        st.markdown("### Step 2: Create new transition table for NFA without ε-transitions")
+                        st.markdown("""
+                        For each state S and input symbol a, the new transition δ'(S,a) will be:
+                        The union of δ(R,a) for all states R in the ε-closure of S
+                        
+                        Follow these steps for each state and symbol:
+                        1. Find the ε-closure of the state
+                        2. For each state in the closure, find all states reachable with the symbol
+                        3. For each of those states, include their ε-closures in the result
+                        """)
+                        
+                        # Create a mock transition table for the NFA without ε transitions
+                        alphabet_without_epsilon = nfa_epsilon.alphabet - {''}
+                        nfa_transitions_data = {"State": []}
+                        for symbol in alphabet_without_epsilon:
+                            nfa_transitions_data[symbol] = []
+                        
+                        for state in sorted(list(nfa_epsilon.states), key=lambda s: s.name if hasattr(s, 'name') else str(s)):
+                            nfa_transitions_data["State"].append(state)
+                            for symbol in alphabet_without_epsilon:
+                                new_states = set()
+                                for s in epsilon_closures[state]:
+                                    if (s, symbol) in nfa_epsilon.transitions:
+                                        for target in nfa_epsilon.transitions[(s, symbol)]:
+                                            new_states.update(epsilon_closures[target])
+                               
+                                if new_states:
+                                    nfa_transitions_data[symbol].append(', '.join(sorted([str(s) for s in new_states])))
+                                else:
+                                    nfa_transitions_data[symbol].append("∅")  # Empty set
+                        
+                        st.table(pd.DataFrame(nfa_transitions_data))
 
                 # Convert NFA to DFA
                 st.subheader("Step 3: Convert NFA to DFA")
