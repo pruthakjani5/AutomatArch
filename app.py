@@ -1268,202 +1268,238 @@ def main():
 
                 # Show NFA-ε to NFA Conversion Steps
                 st.subheader("Step 2: NFA-ε to NFA Conversion (Eliminating ε-transitions)")
-                st.markdown("""
-                Before converting to a DFA, we can first eliminate epsilon transitions from the NFA.
-                This intermediate step helps understand the overall conversion process better.
-                """)
-                
-                with st.expander("Show NFA-ε to NFA Conversion Steps"):
-                    # Compute epsilon closures for all states
-                    epsilon_closures = {}
-                    for state in nfa_epsilon.states:
-                        epsilon_closures[state] = nfa_epsilon.epsilon_closure(state)
-                    
-                    # Display epsilon closures in a table
-                    st.markdown("### Step 1: Compute ε-closures for all states")
-                    closure_data = {"State": [], "ε-closure": []}
-                    for state, closure in epsilon_closures.items():
-                        closure_data["State"].append(state)
-                        closure_data["ε-closure"].append(', '.join(sorted([str(s) for s in closure])))
-                    
-                    st.table(pd.DataFrame(closure_data))
                     st.markdown("""
-                    **How to compute ε-closure:**
-                    - Start with the state itself
-                    - Add all states reachable by following ε-transitions
-                    - Continue until no new states can be added
+                    Before converting to a DFA, we can first eliminate epsilon transitions from the NFA.
+                    This intermediate step helps understand the overall conversion process better.
                     """)
                     
-                    # Show how to create the new transitions
-                    st.markdown("### Step 2: Create new transition table for NFA without ε-transitions")
-                    st.markdown("""
-                    For each state S and input symbol a, the new transition δ'(S,a) will be:
-                    The union of δ(R,a) for all states R in the ε-closure of S
-                    
-                    Follow these steps for each state and symbol:
-                    1. Find the ε-closure of the state
-                    2. For each state in the closure, find all states reachable with the symbol
-                    3. For each of those states, include their ε-closures in the result
-                    """)
-                    
-                    # Create a mock transition table for the NFA without ε transitions
-                    alphabet_without_epsilon = nfa_epsilon.alphabet - {''}
-                    nfa_transitions_data = {"State": []}
-                    for symbol in alphabet_without_epsilon:
-                        nfa_transitions_data[symbol] = []
-                    
-                    for state in sorted(list(nfa_epsilon.states), key=lambda s: s.name if hasattr(s, 'name') else str(s)):
-                        nfa_transitions_data["State"].append(state)
+                    with st.expander("Show NFA-ε to NFA Conversion Steps"):
+                        # Compute epsilon closures for all states
+                        epsilon_closures = {}
+                        for state in nfa_epsilon.states:
+                            epsilon_closures[state] = nfa_epsilon.epsilon_closure(state)
+                        
+                        # Display epsilon closures in a table
+                        st.markdown("### Step 1: Compute ε-closures for all states")
+                        closure_data = {"State": [], "ε-closure": []}
+                        for state, closure in epsilon_closures.items():
+                            closure_data["State"].append(state)
+                            closure_data["ε-closure"].append(', '.join(sorted([str(s) for s in closure])))
+                        
+                        st.table(pd.DataFrame(closure_data))
+                        st.markdown("""
+                        **How to compute ε-closure:**
+                        - Start with the state itself
+                        - Add all states reachable by following ε-transitions
+                        - Continue until no new states can be added
+                        """)
+                        
+                        # Show how to create the new transitions
+                        st.markdown("### Step 2: Create new transition table for NFA without ε-transitions")
+                        st.markdown("""
+                        For each state S and input symbol a, the new transition δ'(S,a) will be:
+                        The union of δ(R,a) for all states R in the ε-closure of S
+                        
+                        Follow these steps for each state and symbol:
+                        1. Find the ε-closure of the state
+                        2. For each state in the closure, find all states reachable with the symbol
+                        3. For each of those states, include their ε-closures in the result
+                        """)
+                        
+                        # Create a mock transition table for the NFA without ε transitions
+                        alphabet_without_epsilon = nfa_epsilon.alphabet - {''}
+                        nfa_transitions_data = {"State": []}
                         for symbol in alphabet_without_epsilon:
-                            new_states = set()
-                            for s in epsilon_closures[state]:
-                                if (s, symbol) in nfa_epsilon.transitions:
-                                    for target in nfa_epsilon.transitions[(s, symbol)]:
-                                        new_states.update(epsilon_closures[target])
-                           
-                            if new_states:
-                                nfa_transitions_data[symbol].append(', '.join(sorted([str(s) for s in new_states])))
-                            else:
-                                nfa_transitions_data[symbol].append("∅")  # Empty set
+                            nfa_transitions_data[symbol] = []
+                        
+                        for state in sorted(list(nfa_epsilon.states), key=lambda s: s.name if hasattr(s, 'name') else str(s)):
+                            nfa_transitions_data["State"].append(state)
+                            for symbol in alphabet_without_epsilon:
+                                new_states = set()
+                                for s in epsilon_closures[state]:
+                                    if (s, symbol) in nfa_epsilon.transitions:
+                                        for target in nfa_epsilon.transitions[(s, symbol)]:
+                                            new_states.update(epsilon_closures[target])
+                               
+                                if new_states:
+                                    nfa_transitions_data[symbol].append(', '.join(sorted([str(s) for s in new_states])))
+                                else:
+                                    nfa_transitions_data[symbol].append("∅")  # Empty set
+                        
+                        st.table(pd.DataFrame(nfa_transitions_data))
+                        
+                         # Show final states calculation
+                        st.markdown("### Step 3: Determine the final states of the new NFA")
+                        st.markdown("""
+                        A state in the new NFA is a final state if its ε-closure contains any final state 
+                        from the original NFA-ε.
+                        """)
+                        
+                        final_states_data = {"State": [], "Contains Final State?": [], "Is Final in New NFA": []}
+                        for state in sorted(list(nfa_epsilon.states), key=lambda s: s.name if hasattr(s, 'name') else str(s)):
+                            final_states_data["State"].append(state)
+                            
+                            contains_final = any(s in nfa_epsilon.final_states for s in epsilon_closures[state])
+                            final_states_data["Contains Final State?"].append("Yes" if contains_final else "No")
+                            final_states_data["Is Final in New NFA"].append("Yes" if contains_final else "No")
+                       
+                        st.table(pd.DataFrame(final_states_data))
+    
+                    # Convert NFA-ε to NFA (remove epsilon transitions)
+                    # st.subheader("Step 2: Convert NFA-ε to NFA (Removing Epsilon Transitions)")
+                    # st.markdown("""
+                    # Before converting to a DFA, we remove epsilon transitions from the NFA-ε. This simplifies the subsequent DFA conversion process.
+                    # """)
+    
+                    nfa = nfa_epsilon.remove_epsilon_transitions()
+    
+                    col1, col2 = st.columns([1, 2])
+                    with col1:
+                        st.markdown("### NFA Details (without ε):")
+                        nfa_str = capture_display(nfa.display)
+                        st.code(nfa_str, language="text")
                     
-                    st.table(pd.DataFrame(nfa_transitions_data))
-
-                # Convert NFA to DFA
-                st.subheader("Step 3: Convert NFA to DFA")
-                st.markdown("""
-                Using the **Subset Construction Algorithm**, we convert the NFA to a Deterministic Finite Automaton (DFA).
-                This eliminates non-determinism by creating states in the DFA that correspond to sets of NFA states.
-                Each DFA state represents all possible states the NFA could be in after reading a particular input.
-                """)
-                
-                # Assign nfa_epsilon to nfa
-                nfa = nfa_epsilon  # Add this line to define the `nfa` variable
-                
-                dfa = nfa.to_dfa()  # Proceed with the conversion
-                with st.expander("Show NFA to DFA Subset Construction Steps"):
-                    st.markdown("### Step 1: Start with the ε-closure of the NFA start state")
-                    initial_closure = nfa.epsilon_closure(nfa.start_state)
-                    initial_closure_str = ', '.join(sorted([str(s) for s in initial_closure]))
-                    st.markdown(f"**Initial DFA state:** {{{initial_closure_str}}} (Label this as q0)")
-                    
-                    st.markdown("### Step 2: Apply subset construction algorithm")
+                    with col2:
+                        st.markdown("### NFA Visualization (without ε):")
+                        nfa_viz = visualize_automaton(nfa, f"NFA for {regex} (no ε)", is_nfa=True)
+                        nfa_viz.render("nfa_no_epsilon", format="png", cleanup=True)
+                        st.image("nfa_no_epsilon.png", use_container_width=True)
+                        st.caption("NFA without epsilon transitions.")
+    
+                    # Convert NFA to DFA
+                    st.subheader("Step 3: Convert NFA to DFA")
                     st.markdown("""
-                    1. Create a queue of unprocessed DFA states (each being a set of NFA states)
-                    2. For each unprocessed DFA state and each input symbol:
-                        - Find all states the NFA can transition to
-                        - Include their ε-closures
-                        - This forms a new DFA state if not seen before
-                    3. Continue until all DFA states are processed
+                    Using the **Subset Construction Algorithm**, we convert the NFA to a Deterministic Finite Automaton (DFA).
+                    This eliminates non-determinism by creating states in the DFA that correspond to sets of NFA states.
+                    Each DFA state represents all possible states the NFA could be in after reading a particular input.
                     """)
                     
-                    # Recreate the subset construction process step by step
-                    alphabet_without_epsilon = nfa.alphabet - {''}
-                    
-                    # Prepare data structures
-                    subset_table = {
-                        "Step": [],
-                        "Current Subset": [],
-                        "Input": [],
-                        "Next States Before ε-closure": [],
-                        "Next States After ε-closure": [],
-                        "New DFA State?": []
-                    }
-                    
-                    # Mock subset construction steps (simplified for demonstration)
-                    initial_closure_frozen = frozenset(initial_closure)
-                    unprocessed = [initial_closure_frozen]
-                    processed = set()
-                    dfa_state_mapping = {initial_closure_frozen: "q0"}
-                    step_counter = 1
-                    
-                    while unprocessed:
-                        current = unprocessed.pop(0)
-                        if current in processed:
-                            continue
+                    dfa = nfa.to_dfa()
+    
+                    with st.expander("Show NFA to DFA Subset Construction Steps"):
+                        st.markdown("### Step 1: Start with the ε-closure of the NFA start state")
+                        initial_closure = nfa.epsilon_closure(nfa.start_state)
+                        initial_closure_str = ', '.join(sorted([str(s) for s in initial_closure]))
+                        st.markdown(f"**Initial DFA state:** {{{initial_closure_str}}} (Label this as q0)")
                         
-                        processed.add(current)
-                        current_label = dfa_state_mapping[current]
+                        st.markdown("### Step 2: Apply subset construction algorithm")
+                        st.markdown("""
+                        1. Create a queue of unprocessed DFA states (each being a set of NFA states)
+                        2. For each unprocessed DFA state and each input symbol:
+                            - Find all states the NFA can transition to
+                            - Include their ε-closures
+                            - This forms a new DFA state if not seen before
+                        3. Continue until all DFA states are processed
+                        """)
                         
-                        for symbol in sorted(alphabet_without_epsilon):
-                            # Find next states before ε-closure
-                            next_states_before = set()
-                            for nfa_state in current:
-                                if (nfa_state, symbol) in nfa.transitions:
-                                    next_states_before.update(nfa.transitions[(nfa_state, symbol)])
+                        # Recreate the subset construction process step by step
+                        alphabet_without_epsilon = nfa.alphabet - {''}
+                        
+                        # Prepare data structures
+                        subset_table = {
+                            "Step": [],
+                            "Current Subset": [],
+                            "Input": [],
+                            "Next States Before ε-closure": [],
+                            "Next States After ε-closure": [],
+                            "New DFA State?": []
+                        }
+                        
+                        # Mock subset construction steps (simplified for demonstration)
+                        initial_closure_frozen = frozenset(initial_closure)
+                        unprocessed = [initial_closure_frozen]
+                        processed = set()
+                        dfa_state_mapping = {initial_closure_frozen: "q0"}
+                        step_counter = 1
+                        
+                        while unprocessed:
+                            current = unprocessed.pop(0)
+                            if current in processed:
+                                continue
                             
-                            # Apply ε-closure to get the complete next state
-                            next_states_after = set()
-                            for ns in next_states_before:
-                                next_states_after.update(nfa.epsilon_closure(ns))
+                            processed.add(current)
+                            current_label = dfa_state_mapping[current]
                             
-                            next_states_frozen = frozenset(next_states_after)
-                            
-                            # Determine if this is a new DFA state
-                            is_new = next_states_frozen and next_states_frozen not in dfa_state_mapping
-                            
-                            if is_new:
-                                dfa_state_mapping[next_states_frozen] = f"q{len(dfa_state_mapping)}"
-                                unprocessed.append(next_states_frozen)
-                            
-                            # Record this step
-                            subset_table["Step"].append(step_counter)
-                            subset_table["Current Subset"].append(f"{current_label}: {{{', '.join(sorted([str(s) for s in current]))}}}")
-                            subset_table["Input"].append(symbol)
-                            
-                            if next_states_before:
-                                subset_table["Next States Before ε-closure"].append(f"{{{', '.join(sorted([str(s) for s in next_states_before]))}}}")
-                            else:
-                                subset_table["Next States Before ε-closure"].append("∅")
+                            for symbol in sorted(alphabet_without_epsilon):
+                                # Find next states before ε-closure
+                                next_states_before = set()
+                                for nfa_state in current:
+                                    if (nfa_state, symbol) in nfa.transitions:
+                                        next_states_before.update(nfa.transitions[(nfa_state, symbol)])
                                 
-                            if next_states_after:
-                                subset_table["Next States After ε-closure"].append(f"{{{', '.join(sorted([str(s) for s in next_states_after]))}}}")
-                                next_label = dfa_state_mapping[next_states_frozen]
-                            else:
-                                subset_table["Next States After ε-closure"].append("∅")
-                                next_label = "dead state"
-                            
-                            subset_table["New DFA State?"].append(f"{'Yes: ' + next_label if is_new else 'No: ' + next_label}")
-                            
-                            step_counter += 1
-                    
-                    # Display the subset construction process table
-                    st.table(pd.DataFrame(subset_table))
-                    
-                    st.markdown("### Step 3: Determine the DFA's final states")
-                    st.markdown("""
-                    A DFA state is a final state if any of the NFA states in its subset is a final state.
-                    """)
-                    
-                    final_states_dfa = {
-                        "DFA State": [],
-                        "NFA States": [],
-                        "Contains NFA Final State?": [],
-                        "Is DFA Final State?": []
-                    }
-                    
-                    for subset, label in dfa_state_mapping.items():
-                        final_states_dfa["DFA State"].append(label)
-                        final_states_dfa["NFA States"].append(f"{{{', '.join(sorted([str(s) for s in subset]))}}}")
+                                # Apply ε-closure to get the complete next state
+                                next_states_after = set()
+                                for ns in next_states_before:
+                                    next_states_after.update(nfa.epsilon_closure(ns))
+                                
+                                next_states_frozen = frozenset(next_states_after)
+                                
+                                # Determine if this is a new DFA state
+                                is_new = next_states_frozen and next_states_frozen not in dfa_state_mapping
+                                
+                                if is_new:
+                                    dfa_state_mapping[next_states_frozen] = f"q{len(dfa_state_mapping)}"
+                                    unprocessed.append(next_states_frozen)
+                                
+                                # Record this step
+                                subset_table["Step"].append(step_counter)
+                                subset_table["Current Subset"].append(f"{current_label}: {{{', '.join(sorted([str(s) for s in current]))}}}")
+                                subset_table["Input"].append(symbol)
+                                
+                                if next_states_before:
+                                    subset_table["Next States Before ε-closure"].append(f"{{{', '.join(sorted([str(s) for s in next_states_before]))}}}")
+                                else:
+                                    subset_table["Next States Before ε-closure"].append("∅")
+                                    
+                                if next_states_after:
+                                    subset_table["Next States After ε-closure"].append(f"{{{', '.join(sorted([str(s) for s in next_states_after]))}}}")
+                                    next_label = dfa_state_mapping[next_states_frozen]
+                                else:
+                                    subset_table["Next States After ε-closure"].append("∅")
+                                    next_label = "dead state"
+                                
+                                subset_table["New DFA State?"].append(f"{'Yes: ' + next_label if is_new else 'No: ' + next_label}")
+                                
+                                step_counter += 1
                         
-                        contains_final = any(s in nfa.final_states for s in subset)
-                        final_states_dfa["Contains NFA Final State?"].append("Yes" if contains_final else "No")
-                        final_states_dfa["Is DFA Final State?"].append("Yes" if contains_final else "No")
+                        # Display the subset construction process table
+                        st.table(pd.DataFrame(subset_table))
+                        
+                        st.markdown("### Step 3: Determine the DFA's final states")
+                        st.markdown("""
+                        A DFA state is a final state if any of the NFA states in its subset is a final state.
+                        """)
+                        
+                        final_states_dfa = {
+                            "DFA State": [],
+                            "NFA States": [],
+                            "Contains NFA Final State?": [],
+                            "Is DFA Final State?": []
+                        }
+                        
+                        for subset, label in dfa_state_mapping.items():
+                            final_states_dfa["DFA State"].append(label)
+                            final_states_dfa["NFA States"].append(f"{{{', '.join(sorted([str(s) for s in subset]))}}}")
+                            
+                            contains_final = any(s in nfa.final_states for s in subset)
+                            final_states_dfa["Contains NFA Final State?"].append("Yes" if contains_final else "No")
+                            final_states_dfa["Is DFA Final State?"].append("Yes" if contains_final else "No")
+                        
+                        st.table(pd.DataFrame(final_states_dfa))
+    
+                    col1, col2 = st.columns([1, 2])
+                    with col1:
+                        st.markdown("### Unminimized DFA Details:")
+                        st.write("#### Transition Table:")
+                        display_dfa_table(dfa)
+                        st.caption("This table shows all transitions in the DFA. Each row represents a state, and each column represents an input symbol.")
                     
-                    st.table(pd.DataFrame(final_states_dfa))
-
-                col1, col2 = st.columns([1, 2])
-                with col1:
-                    st.markdown("### Unminimized DFA Details:")
-                    st.write("#### Transition Table:")
-                    display_dfa_table(dfa)
-                    st.caption("This table shows all transitions in the DFA. Each row represents a state, and each column represents an input symbol.")
-                
-                with col2:
-                    st.markdown("### Unminimized DFA Visualization:")
-                    dfa_viz = visualize_automaton(dfa, f"DFA for {regex}", is_nfa=False)
-                    dfa_viz.render("dfa", format="png", cleanup=True)
-                    st.image("dfa.png", use_container_width=True)
-                    st.caption("The DFA is deterministic - exactly one transition for each input symbol from any state.")
+                    with col2:
+                        st.markdown("### Unminimized DFA Visualization:")
+                        dfa_viz = visualize_automaton(dfa, f"DFA for {regex}", is_nfa=False)
+                        dfa_viz.render("dfa", format="png", cleanup=True)
+                        st.image("dfa.png", use_container_width=True)
+                        st.caption("The DFA is deterministic - exactly one transition for each input symbol from any state.")
 
                 # Minimize DFA
                 st.subheader("Step 4: Minimize DFA")
